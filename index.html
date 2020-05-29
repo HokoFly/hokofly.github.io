@@ -286,7 +286,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://hokofly.github.io/QUIC传输格式规范(中文).html">
+    <link itemprop="mainEntityOfPage" href="https://hokofly.github.io/QUIC 基于UDP的多路复用和安全传输 （draft-ietf-quic-transport-24）.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="HokoFly">
@@ -305,7 +305,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/QUIC传输格式规范(中文).html" itemprop="url">QUIC传输格式规范(中文)</a></h1>
+                <a class="post-title-link" href="/QUIC 基于UDP的多路复用和安全传输 （draft-ietf-quic-transport-24）.html" itemprop="url">QUIC 基于UDP的多路复用和安全传输 （draft-ietf-quic-transport-24）</a></h1>
         
 
         <div class="post-meta">
@@ -317,8 +317,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-08T14:44:13+08:00">
-                2018-04-08
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-29T17:17:25+08:00">
+                2020-05-29
               </time>
             
 
@@ -328,28 +328,6 @@
           </span>
 
           
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/协议/" itemprop="url" rel="index">
-                    <span itemprop="name">协议</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
 
           
             
@@ -357,7 +335,7 @@
 
           
           
-             <span id="/QUIC传输格式规范(中文).html" class="leancloud_visitors" data-flag-title="QUIC传输格式规范(中文)">
+             <span id="/QUIC 基于UDP的多路复用和安全传输 （draft-ietf-quic-transport-24）.html" class="leancloud_visitors" data-flag-title="QUIC 基于UDP的多路复用和安全传输 （draft-ietf-quic-transport-24）">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -390,13 +368,24 @@
       
         
           
-          介绍(Introduction)QUIC (Quick UDP Internet Connection) is a new multiplexed and secure transport atop UDP, designed from the ground up and optimized for HTTP/2 semantics. While built with HTTP/2 as the primary application protocol, QUIC builds on decades of transport and security experience, and implements mechanisms that make it attractive as a modern general-purpose transport. QUIC provides multiplexing and flow control equivalent to HTTP/2, security equivalent to TLS, and connection semantics, reliability, and congestion control equivalent to TCP. 
-QUIC (Quick UDP Internet Connection，快速UDP互联网连接) 是一个新的基于UDP的多路复用且安全的传输协议，它从头开始设计，且为 HTTP/2 语义做了优化。尽管以 HTTP/2 作为主要的应用协议而构建，然而 QUIC 的构建是基于传输和安全领域数十年的经验的，且实现了使它成为有吸引力的现代通用传输协议的机制。QUIC提供了等价于HTTP/2 的多路复用和流控，等价于 TLS 的安全机制，及等价于 TCP 的连接语义、可靠性和拥塞控制。
-QUIC operates entirely in userspace, and is currently shipped to users as a part of the Chromium browser, enabling rapid deployment and experimentation. As a userspace transport atop UDP, QUIC allows innovations which have proven difficult to deploy with
+          QUIC: 基于UDP的多路复用和安全传输 (draft-ietf-quic-transport-24)1. 介绍QUIC是一种多路复用的安全传输为目标的协议。提供如下特性：
+
+复用Stream
+Stream和连接级别的流量控制
+低延迟连接建立
+连接迁移和NAT重绑定的快速恢复
+认证且加密的头部和负载(payload)QUIC使用UDP作为TCP的替代，来避免对旧客户端操作系统和中间件的改动要求。QUIC对所有头部进行认证，并且对大部分交换的数据进行加密，包括信令，来避免中间件引入额外的依赖。
+
+2. Streams(流)QUIC中的流，为应用提供一种轻量的，有序字节流抽象。流可以是单向或双向的。QUIC单向流几乎可以看做无限长度的“消息”的概念。
+流可以通过发送数据创建。其他与流管理相关的操作，结束(ending)，取消(cancelling)和流量控制，都是以最小化负荷为目的设计的。比如，单个STREAM帧可以打开、携带数据以及关闭一个流。流也可以长期存在于整个连接期间。
+流可以被任意端创建，可以与其他流并发地发送数据，也可以被取消。QUIC不会不确保不同流之间的字节数据的有序性。
+在流量控制约束和流限制下，QUIC可以并发地处理任意数量的流，任意数量的数据。
+2.1 流的类型和id流可以是单向或双向的。单向流向一个方向承载数据：从流的发起者到对端。双向流允许两个方向发送数据。一个连接中的流都被数字标记，也就是流ID(stream ID)，流ID是一个62位整数(0 ~ 2^62-1)，且连接中的所有流ID都是唯一的。流ID是可变长度的整数。在一条连接中，QUIC端不能复用流ID。流ID的最低有效位(0x1)表明了流的发起者。客户端发起的流都是偶数ID(该位设为0)，服务端发起的则为奇数ID(该位设为1)导数第二低有效位(0x2)可以区分是双向流(该位设为0)还是单向流(该位设为1)可以用下表概括：
+12345678910111213+------+----------------------------------+| Bits | Stream Type                      |+------+----------------------------------+| 0x0  | Client-Initiated, Bidirectional  ||      |                                  || 
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/QUIC传输格式规范(中文).html#more" rel="contents">
+            <a class="btn" href="/QUIC 基于UDP的多路复用和安全传输 （draft-ietf-quic-transport-24）.html#more" rel="contents">
               Read more &raquo;
             </a>
           </div>
@@ -491,25 +480,7 @@ QUIC operates entirely in userspace, and is currently shipped to users as a part
             
 
             
-              
-              
-              <div class="site-state-item site-state-categories">
-                <a href="/categories/index.html">
-                  <span class="site-state-item-count">1</span>
-                  <span class="site-state-item-name">categories</span>
-                </a>
-              </div>
-            
 
-            
-              
-              
-              <div class="site-state-item site-state-tags">
-                <a href="/tags/index.html">
-                  <span class="site-state-item-count">1</span>
-                  <span class="site-state-item-name">tags</span>
-                </a>
-              </div>
             
 
           </nav>
@@ -569,7 +540,7 @@ QUIC operates entirely in userspace, and is currently shipped to users as a part
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
 </script>
 
-<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
